@@ -16,7 +16,11 @@ class Tutoria(Base):
     created = Column(DateTime())
     modified = Column(DateTime())
 
-    fecha = Column(Date())
+    materia = Column(String())
+    comision = Column(String())
+    aula = Column(String())
+
+    fecha = Column(DateTime())
     tutor_id = Column(String())
 
 class Situacion(Base):
