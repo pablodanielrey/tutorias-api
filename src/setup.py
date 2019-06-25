@@ -34,7 +34,9 @@ setup(name='tutorias-api',
               'flask-cors',
               'gunicorn',
               'ptvsd',
-              'warden-api'
+              'warden-api',
+              'requests',
+              'microservices-common'
           ],
           entry_points={
 #            'console_scripts': [
