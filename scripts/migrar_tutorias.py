@@ -84,25 +84,33 @@ headers = _get_auth_headers(tk)
 usuarios = {}
 
 for tid in tutorias:
-    tutoria = tutorias[tid]
+    try:
+        tutoria = tutorias[tid]
 
-    dni = tutoria['tutor_dni']
-    uid = None
-    if dni not in usuarios:
-        usr = obtener_usuario_por_dni(headers, dni)
-        uid = usr['id']
-        usuarios[dni] = uid
-    uid = usuarios[dni]
-    tutoria['tutor_id'] = uid
-
-    for alumno in tutoria['alumnos']:
-        dni = alumno['alumno_dni']
+        dni = tutoria['tutor_dni']
+        uid = None
         if dni not in usuarios:
             usr = obtener_usuario_por_dni(headers, dni)
             uid = usr['id']
             usuarios[dni] = uid
         uid = usuarios[dni]
-        alumno['id'] = uid
+        tutoria['tutor_id'] = uid
+
+        for alumno in tutoria['alumnos']:
+            try:
+                dni = alumno['alumno_dni']
+                if dni not in usuarios:
+                    usr = obtener_usuario_por_dni(headers, dni)
+                    uid = usr['id']
+                    usuarios[dni] = uid
+                uid = usuarios[dni]
+                alumno['id'] = uid
+
+            except Exception as e2:
+                logging.exception(e2)
+
+    except Exception as e:
+        logging.exception(e)
 
 import uuid
 from tutorias.model import obtener_session
@@ -115,27 +123,36 @@ with obtener_session() as session:
         situaciones[s.situacion] = s.id
 
     for tid in tutorias:
-        logging.info(f'Agregando tutoria {tid}')
-        tutoria = tutorias[tid]
+        try:
+            logging.info(f'Agregando tutoria {tid}')
+            tutoria = tutorias[tid]
+            if 'tutor_dni' not in tutoria:
+                continue
 
-        if session.query(Tutoria).filter(Tutoria.id == tid).count() <= 0:
-            t = Tutoria()
-            t.id = tid
-            t.ceated = datetime.datetime.utcnow()
-            t.fecha = tutoria['fecha']
-            t.tutor_id = tutoria['tutor_id']
-            session.add(t)
+            if session.query(Tutoria).filter(Tutoria.id == tid).count() <= 0:
+                t = Tutoria()
+                t.id = tid
+                t.ceated = datetime.datetime.utcnow()
+                t.fecha = tutoria['fecha']
+                t.tutor_id = tutoria['tutor_id']
+                session.add(t)
 
-        for alumno in tutoria['alumnos']:
-            aid = alumno['id']
-            if session.query(Asistencia).filter(Asistencia.alumno_id == aid, Asistencia.tutoria_id == tid).count() <= 0:
-                a = Asistencia()
-                a.alumno_id = aid
-                a.tutoria_id = tid
-                a.created = datetime.datetime.utcnow()
-                a.id = str(uuid.uuid4())
-                a.situacion_id = situaciones[alumno['situacion']]
-                session.add(a)
+            for alumno in tutoria['alumnos']:
+                if 'id' not in alumno:
+                    continue
+                    
+                aid = alumno['id']
+                if session.query(Asistencia).filter(Asistencia.alumno_id == aid, Asistencia.tutoria_id == tid).count() <= 0:
+                    a = Asistencia()
+                    a.alumno_id = aid
+                    a.tutoria_id = tid
+                    a.created = datetime.datetime.utcnow()
+                    a.id = str(uuid.uuid4())
+                    a.situacion_id = situaciones[alumno['situacion']]
+                    session.add(a)
 
-        logging.info(f'Agregado tutoria {tid}')
-        session.commit()
+            logging.info(f'Agregado tutoria {tid}')
+            session.commit()
+            
+        except Exception as e:
+            logging.exception(e)
