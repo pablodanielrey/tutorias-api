@@ -80,37 +80,42 @@ headers = _get_auth_headers(tk)
     obtengo los ids para los tutores y los alumnos
     de paso los cacheo para no preguntarlos nuevamente
 """
+import json
+with open('errores.log','w') as f:
+    usuarios = {}
 
-usuarios = {}
+    for tid in tutorias:
+        try:
+            tutoria = tutorias[tid]
 
-for tid in tutorias:
-    try:
-        tutoria = tutorias[tid]
+            dni = tutoria['tutor_dni']
+            uid = None
+            if dni not in usuarios:
+                usr = obtener_usuario_por_dni(headers, dni)
+                uid = usr['id']
+                usuarios[dni] = uid
+            uid = usuarios[dni]
+            tutoria['tutor_id'] = uid
 
-        dni = tutoria['tutor_dni']
-        uid = None
-        if dni not in usuarios:
-            usr = obtener_usuario_por_dni(headers, dni)
-            uid = usr['id']
-            usuarios[dni] = uid
-        uid = usuarios[dni]
-        tutoria['tutor_id'] = uid
+            for alumno in tutoria['alumnos']:
+                try:
+                    dni = alumno['alumno_dni']
+                    if dni not in usuarios:
+                        usr = obtener_usuario_por_dni(headers, dni)
+                        uid = usr['id']
+                        usuarios[dni] = uid
+                    uid = usuarios[dni]
+                    alumno['id'] = uid
 
-        for alumno in tutoria['alumnos']:
-            try:
-                dni = alumno['alumno_dni']
-                if dni not in usuarios:
-                    usr = obtener_usuario_por_dni(headers, dni)
-                    uid = usr['id']
-                    usuarios[dni] = uid
-                uid = usuarios[dni]
-                alumno['id'] = uid
+                except Exception as e2:
+                    f.write('error agregando alumno :')
+                    f.write(json.dumps(alumno))
+                    logging.exception(e2)
 
-            except Exception as e2:
-                logging.exception(e2)
-
-    except Exception as e:
-        logging.exception(e)
+        except Exception as e:
+            f.write('error agregando tutoria:')
+            f.write(json.dumps(tutoria))
+            logging.exception(e)
 
 import uuid
 from tutorias.model import obtener_session
@@ -140,7 +145,7 @@ with obtener_session() as session:
             for alumno in tutoria['alumnos']:
                 if 'id' not in alumno:
                     continue
-                    
+
                 aid = alumno['id']
                 if session.query(Asistencia).filter(Asistencia.alumno_id == aid, Asistencia.tutoria_id == tid).count() <= 0:
                     a = Asistencia()
