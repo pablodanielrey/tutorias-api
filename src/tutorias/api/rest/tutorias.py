@@ -28,10 +28,11 @@ TUTORIA_UPDATE = 'urn:tutorias:tutoria:update'
 TUTORIA_DELETE = 'urn:tutorias:tutoria:delete'
 
 
+from tutorias.model import obtener_session
+from tutorias.api.rest.models import tutoriasModel
+
 from flask import Blueprint, request, jsonify, send_file
 
-from tutorias.model import obtener_session
-from tutorias.model.TutoriasModel import TutoriasModel
 
 bp = Blueprint('tutorias', __name__, url_prefix='/tutorias/api/v1.0')
 
@@ -80,7 +81,7 @@ def obtener_situaciones():
 
     try:
         with obtener_session() as session:
-            situaciones = TutoriasModel.obtener_situaciones(session)
+            situaciones = tutoriasModel.obtener_situaciones(session)
             resultado = [
                 {
                     'id': t.id,
@@ -111,7 +112,7 @@ def obtener_tutorias():
 
     try:
         with obtener_session() as session:
-            tutorias = TutoriasModel.obtener_tutorias(session)
+            tutorias = tutoriasModel.obtener_tutorias(session)
             resultado = [
                 {
                     'id': t.id,
@@ -148,7 +149,7 @@ def obtener_tutoria(tid):
 
     try:
         with obtener_session() as session:
-            t = TutoriasModel.obtener_tutoria(session, tid)
+            t = tutoriasModel.obtener_tutoria(session, tid)
             resultado = {
                 'id': t.id,
                 'fecha': t.fecha,
@@ -189,7 +190,7 @@ def obtener_asistencia_a_tutoria(tid):
 
     try:
         with obtener_session() as session:
-            asistencias = TutoriasModel.obtener_asistencia(session, tid)
+            asistencias = tutoriasModel.obtener_asistencia(session, tid)
             resultado = [
                 {
                     'id': a.id, 

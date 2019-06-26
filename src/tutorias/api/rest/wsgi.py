@@ -12,6 +12,17 @@ app.debug = False
 CORS(app)
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
-from . import tutorias
-app.register_blueprint(tutorias.bp)
+"""
+    /////////////
+    registro los converters 
+"""
+from rest_utils.converters.ListConverter import ListConverter
+app.url_map.converters['list'] = ListConverter
+"""
+    ////////////
+"""
 
+from . import tutorias
+from . import users
+app.register_blueprint(tutorias.bp)
+app.register_blueprint(users.bp)
