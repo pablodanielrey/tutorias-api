@@ -256,7 +256,7 @@ def obtener_qrcode(tid):
     #if not _chequear_usuarios_tutorias(uid):
     #    return ('No tiene permisos para realizar esta acción', 403)
 
-    """ obtengo en que formato se quiere el qr """
+    """ obtengo en que formato se quiere el qr """  
     mime_type = request.headers.get('content-type')
     if not mime_type:
         mime_type = 'text/html'
