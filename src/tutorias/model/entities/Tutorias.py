@@ -23,6 +23,7 @@ class Tutoria(Base):
     fecha = Column(DateTime())
     tutor_id = Column(String())
 
+
 class Situacion(Base):
     __tablename__ = 'situaciones'
 
@@ -42,7 +43,10 @@ class Asistencia(Base):
     alumno_id = Column(String())
 
     situacion_id = Column(String(), ForeignKey('situaciones.id'))
+    situacion = relationship('Situacion')
+
     tutoria_id = Column(String(), ForeignKey('tutorias.id'))
     tutoria = relationship('Tutoria')
+
 
 

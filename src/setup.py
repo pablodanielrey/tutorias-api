@@ -36,7 +36,7 @@ setup(name='tutorias-api',
               'ptvsd',
               'warden-api',
               'requests',
-              'microservices-common'
+              'microservices-common>=2.0.4a4'
           ],
           entry_points={
 #            'console_scripts': [

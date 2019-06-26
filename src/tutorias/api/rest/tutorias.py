@@ -64,29 +64,141 @@ def registrar_permisos():
     except Exception as e:
         return jsonify({'status':500, 'response': str(e)})    
 
-@bp.route('/tutorias', methods=['GET'])
-def obtener_tipos_de_normativas():
-    (token,tkdata) = warden._require_valid_token()
+
+@bp.route('/situaciones', methods=['GET'])
+def obtener_situaciones():
+    #(token,tkdata) = warden._require_valid_token()
     """
         !!!! TODO: esto se debe activar ni bien esté operativa la nueva version de warden
 
     if not warden.has_permissions(token, permisos=[NORMAS_CREATE]):
         return ('No tiene permisos para realizar esta acción', 403)
     """
-    uid = tkdata['sub']
-    if not _chequear_usuarios_tutorias(uid):
+    #uid = tkdata['sub']
+    #if not _chequear_usuarios_tutorias(uid):
+    #    return ('No tiene permisos para realizar esta acción', 403)
+
+    try:
+        with obtener_session() as session:
+            situaciones = TutoriasModel.obtener_situaciones(session)
+            resultado = [
+                {
+                    'id': t.id,
+                    'situacion': t.situacion
+                }
+                for t in situaciones
+            ]
+            return jsonify({'status':200, 'response':resultado})
+
+    except Exception as e:
+        return jsonify({'status':500, 'response': str(e)})
+
+
+@bp.route('/tutorias', methods=['GET'])
+def obtener_tutorias():
+    #(token,tkdata) = warden._require_valid_token()
+    """
+        !!!! TODO: esto se debe activar ni bien esté operativa la nueva version de warden
+
+    if not warden.has_permissions(token, permisos=[NORMAS_CREATE]):
         return ('No tiene permisos para realizar esta acción', 403)
+    """
+    #uid = tkdata['sub']
+    #if not _chequear_usuarios_tutorias(uid):
+    #    return ('No tiene permisos para realizar esta acción', 403)
+
+    params = request.json
 
     try:
         with obtener_session() as session:
             tutorias = TutoriasModel.obtener_tutorias(session)
             resultado = [
                 {
-                    'id': t.id
+                    'id': t.id,
+                    'fecha': t.fecha,
+                    'materia': t.materia,
+                    'comision': t.comision,
+                    'aula': t.aula,
+                    'tutor': t.tutor,
+                    'nro_alumnos': t.nro_alumnos,
+                    'asistencia': None
                 }
                 for t in tutorias
             ]
-            return jsonify({'status':200,'tutorias':resultado})
+            return jsonify({'status':200, 'response':resultado})
+
+    except Exception as e:
+        return jsonify({'status':500, 'response': str(e)})
+
+
+@bp.route('/tutoria/<tid>', methods=['GET'])
+def obtener_tutoria(tid):
+    #(token,tkdata) = warden._require_valid_token()
+    """
+        !!!! TODO: esto se debe activar ni bien esté operativa la nueva version de warden
+
+    if not warden.has_permissions(token, permisos=[NORMAS_CREATE]):
+        return ('No tiene permisos para realizar esta acción', 403)
+    """
+    #uid = tkdata['sub']
+    #if not _chequear_usuarios_tutorias(uid):
+    #    return ('No tiene permisos para realizar esta acción', 403)
+
+    assert tid is not None
+
+    try:
+        with obtener_session() as session:
+            t = TutoriasModel.obtener_tutoria(session, tid)
+            resultado = {
+                'id': t.id,
+                'fecha': t.fecha,
+                'materia': t.materia,
+                'comision': t.comision,
+                'aula': t.aula,
+                'tutor': t.tutor,
+                'nro_alumnos': t.nro_alumnos,
+                'asistencia': [ 
+                    {
+                        'id': a.id,
+                        'alumno': a.alumno,
+                        'situacion': a.situacion.situacion
+                    } 
+                    for a in t.asistencia
+                ]
+            }
+            return jsonify({'status':200, 'response':resultado})
+
+    except Exception as e:
+        return jsonify({'status':500, 'response': str(e)})
+
+
+@bp.route('/asistencias/<tid>', methods=['GET'])
+def obtener_asistencia_a_tutoria(tid):
+    #(token,tkdata) = warden._require_valid_token()
+    """
+        !!!! TODO: esto se debe activar ni bien esté operativa la nueva version de warden
+
+    if not warden.has_permissions(token, permisos=[NORMAS_CREATE]):
+        return ('No tiene permisos para realizar esta acción', 403)
+    """
+    #uid = tkdata['sub']
+    #if not _chequear_usuarios_tutorias(uid):
+    #    return ('No tiene permisos para realizar esta acción', 403)
+
+    assert tid is not None
+
+    try:
+        with obtener_session() as session:
+            asistencias = TutoriasModel.obtener_asistencia(session, tid)
+            resultado = [
+                {
+                    'id': a.id, 
+                    'alumno': a.alumno, 
+                    'situacion': a.situacion.situacion
+                } 
+                for a in asistencias
+            ]
+            return jsonify({'status':200, 'response':resultado})
 
     except Exception as e:
         return jsonify({'status':500, 'response': str(e)})
