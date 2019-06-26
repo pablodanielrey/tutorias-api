@@ -36,6 +36,8 @@ setup(name='tutorias-api',
               'ptvsd',
               'warden-api',
               'requests',
+              'pyqrcode',
+              'pypng',
               'users-api>=1.4.0a1',
               'microservices-common>=2.0.8a1'
           ],

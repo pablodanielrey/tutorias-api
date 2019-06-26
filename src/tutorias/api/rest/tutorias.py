@@ -4,6 +4,8 @@ import datetime
 from dateutil.parser import parse
 import base64
 import io
+import json
+
 
 """
     /////////////////////////
@@ -26,6 +28,14 @@ warden = Warden(OIDC_URL, warden_url, client_id, client_secret, verify=VERIFY_SS
 TUTORIA_CREATE = 'urn:tutorias:tutoria:create'
 TUTORIA_UPDATE = 'urn:tutorias:tutoria:update'
 TUTORIA_DELETE = 'urn:tutorias:tutoria:delete'
+
+import pyqrcode
+URL_FOR_QR = os.environ['URL_FOR_QR']
+
+def _generar_qr_para_tutoria(tid):
+    texto = f"{URL_FOR_QR}/{tid}"
+    qr = pyqrcode.create(texto).png_as_base64_str(scale=3)
+    return qr
 
 
 from tutorias.model import obtener_session
@@ -95,6 +105,7 @@ def obtener_situaciones():
         return jsonify({'status':500, 'response': str(e)})
 
 
+
 @bp.route('/tutorias', methods=['GET'])
 def obtener_tutorias():
     #(token,tkdata) = warden._require_valid_token()
@@ -127,6 +138,32 @@ def obtener_tutorias():
                 for t in tutorias
             ]
             return jsonify({'status':200, 'response':resultado})
+
+    except Exception as e:
+        return jsonify({'status':500, 'response': str(e)})
+
+
+@bp.route('/tutorias', methods=['POST'])
+def crear_tutoria():
+    #(token,tkdata) = warden._require_valid_token()
+    """
+        !!!! TODO: esto se debe activar ni bien esté operativa la nueva version de warden
+
+    if not warden.has_permissions(token, permisos=[NORMAS_CREATE]):
+        return ('No tiene permisos para realizar esta acción', 403)
+    """
+    #uid = tkdata['sub']
+    #if not _chequear_usuarios_tutorias(uid):
+    #    return ('No tiene permisos para realizar esta acción', 403)
+
+    tutoria = request.json
+    tutoria['fecha'] = parse(tutoria['fecha'])
+    
+    try:
+        with obtener_session() as session:
+            tid = tutoriasModel.crear_tutoria(session, tutoria)
+            session.commit()
+            return jsonify({'status':200, 'response':tid})
 
     except Exception as e:
         return jsonify({'status':500, 'response': str(e)})
@@ -165,7 +202,8 @@ def obtener_tutoria(tid):
                         'situacion': a.situacion.situacion
                     } 
                     for a in t.asistencia
-                ]
+                ],
+                'qr': _generar_qr_para_tutoria(tid)
             }
             return jsonify({'status':200, 'response':resultado})
 
@@ -203,3 +241,53 @@ def obtener_asistencia_a_tutoria(tid):
 
     except Exception as e:
         return jsonify({'status':500, 'response': str(e)})
+
+
+@bp.route('/qrcode/<tid>', methods=['GET'])
+def obtener_qrcode(tid):
+    #(token,tkdata) = warden._require_valid_token()
+    """
+        !!!! TODO: esto se debe activar ni bien esté operativa la nueva version de warden
+
+    if not warden.has_permissions(token, permisos=[NORMAS_CREATE]):
+        return ('No tiene permisos para realizar esta acción', 403)
+    """
+    #uid = tkdata['sub']
+    #if not _chequear_usuarios_tutorias(uid):
+    #    return ('No tiene permisos para realizar esta acción', 403)
+
+    """ obtengo en que formato se quiere el qr """
+    mime_type = request.headers.get('content-type')
+    if not mime_type:
+        mime_type = 'text/html'
+
+    qr = _generar_qr_para_tutoria(tid)
+
+    if 'text/html' in mime_type:
+        datauri = f"<img src='data:image/png;base64,{qr}'>"
+        return (datauri, 200)
+
+    if 'image/png' in mime_type:
+        bs = base64.b64decode(qr.encode())
+        return send_file(io.BytesIO(bs), attachment_filename=f'{tid}.png', mimetype='image/png')
+
+    if 'application/json' in mime_type:
+        data = {
+            'qr': qr,
+            'encoding': 'base64',
+            'tutoria_id': tid,
+            'date': str(datetime.datetime.utcnow())
+        }
+        return (json.dumps(data), 200)
+
+    return ('Malformed', 401)
+
+    """
+    assert qid is not None
+    try:
+
+        return jsonify({'status':200, 'response':resultado})
+
+    except Exception as e:
+        return jsonify({'status':500, 'response': str(e)})
+    """

@@ -9,6 +9,8 @@ from sqlalchemy.orm import relationship
 
 from tutorias.model.entities import Base
 
+    
+
 class Tutoria(Base):
     __tablename__ = 'tutorias'
 
@@ -47,6 +49,3 @@ class Asistencia(Base):
 
     tutoria_id = Column(String(), ForeignKey('tutorias.id'))
     tutoria = relationship('Tutoria')
-
-
-

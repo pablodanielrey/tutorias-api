@@ -1,4 +1,10 @@
 
+import uuid
+import datetime
+
+import pyqrcode
+#from pyqrcode import QRCode
+
 from .UsersModel import UsersModel
 from .entities.Tutorias import Situacion, Tutoria, Asistencia
 
@@ -23,6 +29,32 @@ class TutoriasModel:
             t.tutor = u
             t.nro_alumnos = session.query(Asistencia).filter(Asistencia.tutoria_id == t.id).count()
         return ts
+
+    def crear_tutoria(self, session, tutoria):
+        fecha = tutoria['fecha']
+        tutor = tutoria['tutor_id']
+        materia = tutoria['materia']
+        comision = tutoria['comision']
+        aula = tutoria['aula']
+
+        t = session.query(Tutoria).filter(Tutoria.tutor_id == tutor, Tutoria.fecha == fecha).one_or_none()
+        if t:
+            return t.id
+
+        tid = str(uuid.uuid4())
+        t = Tutoria()
+        t.id = tid
+        t.created = datetime.datetime.utcnow()
+        t.fecha = fecha
+        t.tutor_id = tutor
+        t.materia = materia
+        t.comision = comision
+        t.aula = aula
+        session.add(t)
+
+        return tid
+
+
 
     def obtener_asistencia(self, session, tid):
         ts = session.query(Asistencia).filter(Asistencia.tutoria_id == tid).all()
