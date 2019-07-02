@@ -24,9 +24,23 @@ class TutoriasModel:
 
     def obtener_tutorias(self, session):
         ts = session.query(Tutoria).all()
+        
+        """ es mas rápido una sola llamada a la api de usuarios """
+        tuids = [t.tutor_id for t in ts]
+        """ separo la lista en listas de a 10 elementos para que no se haga tan largo el get """
+        tamano = 20
+        sub_tuids = [tuids[i:i+tamano] for i in range(0,len(tuids),tamano)]
+        headers = self.users_model._get_headers()
+        users = []
+        for tids in sub_tuids:
+            users.extend(self.users_model.obtener_usuarios(tids, headers))
+
         for t in ts:
-            u = self.users_model.obtener_usuario(t.tutor_id)
-            t.tutor = u
+            #u = self.users_model.obtener_usuario(t.tutor_id)
+            for u in users:
+                if t.tutor_id in u['id']:
+                    t.tutor = u
+            #t.tutor = u
             t.nro_alumnos = session.query(Asistencia).filter(Asistencia.tutoria_id == t.id).count()
         return ts
 
