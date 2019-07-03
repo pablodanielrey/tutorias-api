@@ -39,7 +39,7 @@ setup(name='tutorias-api',
               'pyqrcode',
               'pypng',
               'pymongo',
-              'users-api>=1.7.0',
+              'users-sdk>=1.7.0',
               'microservices-common>=2.0.8a1'
           ],
           entry_points={
