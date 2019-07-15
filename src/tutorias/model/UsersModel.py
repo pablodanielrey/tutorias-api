@@ -16,7 +16,14 @@ class UsersModel:
     def obtener_usuarios(self, uids=[], headers=None):
         if not headers:
             headers = self._get_headers()
-        return self.users_api.obtener_usuarios(headers, uids)
+
+        tamano = 50
+        uuids = [uids[i:i+tamano] for i in range(0,len(uids), tamano)]
+        users = []
+        for _uids in uuids:
+            users.extend(self.users_api.obtener_usuarios(headers, _uids))
+        return users
+        #return self.users_api.obtener_usuarios(headers, uids)
 
     def obtener_usuario(self, uid, headers=None):
         if not headers:
