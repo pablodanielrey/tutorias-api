@@ -5,6 +5,7 @@ from dateutil.parser import parse
 import base64
 import io
 import json
+import re
 
 
 """
@@ -145,7 +146,10 @@ def obtener_tutorias():
 
 @bp.route('/tutorias', methods=['POST'])
 def crear_tutoria():
-    #(token,tkdata) = warden._require_valid_token()
+    (token,tkdata) = warden._require_valid_token()
+    if not tkdata:
+        return (401, 'Token expirado')
+
     """
         !!!! TODO: esto se debe activar ni bien esté operativa la nueva version de warden
 
@@ -156,10 +160,30 @@ def crear_tutoria():
     #if not _chequear_usuarios_tutorias(uid):
     #    return ('No tiene permisos para realizar esta acción', 403)
 
-    tutoria = request.json
-    tutoria['fecha'] = parse(tutoria['fecha'])
-    
     try:
+        tutoria = request.json
+
+        assert 'fecha' in tutoria
+        assert 'hora_inicio' in tutoria
+        assert 'materia' in tutoria
+        assert 'comision' in tutoria
+        assert 'aula' in tutoria
+
+        tutoria['tutor_id'] = tkdata['sub']
+
+        fecha = parse(tutoria['fecha'])
+        tutoria['fecha'] = fecha
+
+        ''' parseo la hora de inicio como segundos a partir de las 00 '''
+        rhora = re.compile(r'(\d\d):(\d\d)')
+        matchs = rhora.match(tutoria['hora_inicio'])
+        if not matchs:
+            raise Exception(f"formato incorrecto en la hora {tutoria['hora_inicio']}")
+        _hora = matchs.group(1)
+        _minutos = matchs.group(2)
+        hora = int(_hora) * 60 * 60 + int(_minutos) * 60
+        tutoria['hora_inicio'] = hora
+
         with obtener_session() as session:
             tid = tutoriasModel.crear_tutoria(session, tutoria)
             session.commit()
