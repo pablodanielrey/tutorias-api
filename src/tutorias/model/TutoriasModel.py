@@ -23,7 +23,8 @@ class TutoriasModel:
         return t
 
     def obtener_tutorias(self, session):
-        ts = session.query(Tutoria).all()
+        #ts = session.query(Tutoria).all()
+        ts = session.query(Tutoria).order_by(Tutoria.fecha.desc()).limit(10).all()
         
         """ es mas rápido una sola llamada a la api de usuarios """
         tuids = [t.tutor_id for t in ts]
@@ -78,6 +79,18 @@ class TutoriasModel:
             if a.alumno_id in ialumnos:
                 a.alumno = ialumnos[a.alumno_id]
         return ts
+
+
+    def crear_asistencia(self, session, tutoria_id, alumno_id, situacion_id):
+        a = Asistencia()
+        a.id = str(uuid.uuid4())
+        a.created = datetime.datetime.utcnow()
+        a.alumno_id = alumno_id
+        a.situacion_id = situacion_id
+        a.tutoria_id = tutoria_id
+        session.add(a)
+        return a.id
+
 
     def obtener_situaciones(self, session):
         return session.query(Situacion).all()

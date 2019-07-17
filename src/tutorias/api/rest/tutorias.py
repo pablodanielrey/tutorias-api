@@ -267,6 +267,25 @@ def obtener_asistencia_a_tutoria(tid):
         return jsonify({'status':500, 'response': str(e)})
 
 
+@bp.route('/asistencias', methods=['POST'])
+def crear_asistencia():
+    try:
+
+        datos = request.json
+        tutoria_id = datos['id']
+        situacion_id = datos['situacion_id']
+        alumnos = datos['alumnos']
+
+        with obtener_session() as session:
+            aid = []
+            for alumno_id in alumnos:
+                aid.append(tutoriasModel.crear_asistencia(session, tutoria_id, alumno_id, situacion_id))
+            session.commit()
+            return jsonify({'status':200, 'response':aid})
+
+    except Exception as e:
+        return jsonify({'status':500, 'response': str(e)})    
+
 @bp.route('/qrcode/<tid>', methods=['GET'])
 def obtener_qrcode(tid):
     #(token,tkdata) = warden._require_valid_token()
