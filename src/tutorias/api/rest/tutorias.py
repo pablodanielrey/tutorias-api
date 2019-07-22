@@ -225,11 +225,37 @@ def obtener_tutoria(tid):
                         'alumno': a.alumno,
                         'situacion': a.situacion.situacion
                     } 
-                    for a in t.asistencia
+                    for a in t.asistencia if not a.deleted
                 ],
                 'qr': _generar_qr_para_tutoria(tid)
             }
             return jsonify({'status':200, 'response':resultado})
+
+    except Exception as e:
+        return jsonify({'status':500, 'response': str(e)})
+
+
+@bp.route('/tutoria/<tid>', methods=['DELETE'])
+def eliminar_tutoria(tid):
+    try:
+        (token,tkdata) = warden._require_valid_token()
+        """
+            !!!! TODO: esto se debe activar ni bien esté operativa la nueva version de warden
+
+        if not warden.has_permissions(token, permisos=[NORMAS_CREATE]):
+            return ('No tiene permisos para realizar esta acción', 403)
+        """
+        if not tkdata:
+            raise Exception('token == null')
+        uid = tkdata['sub']
+        #if not _chequear_usuarios_tutorias(uid):
+        #    return ('No tiene permisos para realizar esta acción', 403)
+        assert tid is not None
+
+        with obtener_session() as session:
+            tid = tutoriasModel.eliminar_tutoria(session, tid, uid)
+            session.commit()
+            return jsonify({'status':200, 'response':tid})
 
     except Exception as e:
         return jsonify({'status':500, 'response': str(e)})
@@ -266,6 +292,31 @@ def obtener_asistencia_a_tutoria(tid):
     except Exception as e:
         return jsonify({'status':500, 'response': str(e)})
 
+@bp.route('/asistencias/<tid>', methods=['DELETE'])
+def eliminar_asistencia_a_tutoria(tid):
+    try:
+        (token,tkdata) = warden._require_valid_token()
+        """
+            !!!! TODO: esto se debe activar ni bien esté operativa la nueva version de warden
+
+        if not warden.has_permissions(token, permisos=[NORMAS_CREATE]):
+            return ('No tiene permisos para realizar esta acción', 403)
+        """
+        if not tkdata:
+            raise Exception('token == null')
+        uid = tkdata['sub']
+        #if not _chequear_usuarios_tutorias(uid):
+        #    return ('No tiene permisos para realizar esta acción', 403)
+        assert tid is not None
+
+        with obtener_session() as session:
+            aid = tutoriasModel.eliminar_asistencia(session, tid, uid)
+            session.commit()
+            return jsonify({'status':200, 'response':aid})
+
+    except Exception as e:
+        return jsonify({'status':500, 'response': str(e)})
+
 
 @bp.route('/asistencias', methods=['POST'])
 def crear_asistencia():
@@ -285,6 +336,7 @@ def crear_asistencia():
 
     except Exception as e:
         return jsonify({'status':500, 'response': str(e)})    
+
 
 @bp.route('/qrcode/<tid>', methods=['GET'])
 def obtener_qrcode(tid):

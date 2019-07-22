@@ -25,6 +25,9 @@ class Tutoria(Base):
     fecha = Column(DateTime())
     tutor_id = Column(String())
 
+    deleted = Column(Boolean(), default=False)
+    deleter_id = Column(String())
+
 
 class Situacion(Base):
     __tablename__ = 'situaciones'
@@ -49,3 +52,6 @@ class Asistencia(Base):
 
     tutoria_id = Column(String(), ForeignKey('tutorias.id'))
     tutoria = relationship('Tutoria')
+
+    deleted = Column(Boolean(), default=False)
+    deleter_id = Column(String())
