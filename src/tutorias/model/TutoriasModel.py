@@ -18,7 +18,7 @@ class TutoriasModel:
         ''' chequea si tiene acceso a los datos de la tutoría '''
         t = session.query(Tutoria).filter(Tutoria.id == tid).one()
         if t.tutor_id != uid:
-            if session.queyr(Coordinador).filter(Coordinador.coordinador_id == uid, Coordinador.tutor_id == t.tutor_id).count() <= 0:
+            if session.query(Coordinador).filter(Coordinador.coordinador_id == uid, Coordinador.tutor_id == t.tutor_id).count() <= 0:
                 raise Exception(f'{uid} no tiene permisos para acceder a la tutoria {tid}')
         return t
 
