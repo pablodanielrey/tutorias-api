@@ -6,25 +6,36 @@ import pyqrcode
 #from pyqrcode import QRCode
 
 from .UsersModel import UsersModel
-from .entities.Tutorias import Situacion, Tutoria, Asistencia
+from .entities.Tutorias import Situacion, Tutoria, Asistencia, Coordinador
 
 class TutoriasModel:
 
     def __init__(self, users_model):
         self.users_model = users_model
 
-    def obtener_tutoria(self, session, tid):
-        asistencia = self.obtener_asistencia(session, tid)
+
+    def _chequear_acceso(self, session, tid, uid):
+        ''' chequea si tiene acceso a los datos de la tutoría '''
         t = session.query(Tutoria).filter(Tutoria.id == tid).one()
+        if t.tutor_id != uid:
+            if session.queyr(Coordinador).filter(Coordinador.coordinador_id == uid, Coordinador.tutor_id == t.tutor_id).count() <= 0:
+                raise Exception(f'{uid} no tiene permisos para acceder a la tutoria {tid}')
+        return t
+
+    def obtener_tutoria(self, session, tid, uid):
+        t = self._chequear_acceso(session, tid, uid)
+        asistencia = self.obtener_asistencia(session, tid)
         u = self.users_model.obtener_usuario(t.tutor_id)
         t.tutor = u
         t.nro_alumnos = len(asistencia)
         t.asistencia = asistencia
         return t
 
-    def obtener_tutorias(self, session):
-        #ts = session.query(Tutoria).filter(Tutoria.deleted == False).all()
-        ts = session.query(Tutoria).filter(Tutoria.tutor_id == '89d88b81-fbc0-48fa-badb-d32854d3d93a', Tutoria.deleted == False).all()
+    def obtener_tutorias(self, session, uid):
+        tutores_id = [c.tutor_id for c in session.query(Coordinador).filter(Coordinador.coordinador_id == uid).all()]
+        tutores_id.append(uid)
+
+        ts = session.query(Tutoria).filter(Tutoria.deleted == False, Tutoria.tutor_id.in_(tutores_id)).all()
 
         """ es mas rápido una sola llamada a la api de usuarios """
         tuids = [t.tutor_id for t in ts]

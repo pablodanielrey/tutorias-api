@@ -9,7 +9,16 @@ from sqlalchemy.orm import relationship
 
 from tutorias.model.entities import Base
 
-    
+class Coordinador(Base):
+    __tablename__ = 'coordinadores'
+
+    id = Column(String(), primary_key=True, default=None)
+    created = Column(DateTime())
+    modified = Column(DateTime())
+
+    tutor_id = Column(String())
+    coordinador_id = Column(String())    
+
 
 class Tutoria(Base):
     __tablename__ = 'tutorias'

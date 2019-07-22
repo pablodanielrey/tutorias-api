@@ -109,7 +109,10 @@ def obtener_situaciones():
 
 @bp.route('/tutorias', methods=['GET'])
 def obtener_tutorias():
-    #(token,tkdata) = warden._require_valid_token()
+    (token,tkdata) = warden._require_valid_token()
+    if not tkdata:
+        return (401, 'Token expirado')
+    uid = tkdata['sub']
     """
         !!!! TODO: esto se debe activar ni bien esté operativa la nueva version de warden
 
@@ -120,11 +123,11 @@ def obtener_tutorias():
     #if not _chequear_usuarios_tutorias(uid):
     #    return ('No tiene permisos para realizar esta acción', 403)
 
-    params = request.json
-
     try:
+        params = request.json
+
         with obtener_session() as session:
-            tutorias = tutoriasModel.obtener_tutorias(session)
+            tutorias = tutoriasModel.obtener_tutorias(session, uid)
             resultado = [
                 {
                     'id': t.id,
@@ -195,7 +198,10 @@ def crear_tutoria():
 
 @bp.route('/tutoria/<tid>', methods=['GET'])
 def obtener_tutoria(tid):
-    #(token,tkdata) = warden._require_valid_token()
+    (token,tkdata) = warden._require_valid_token()
+    if not tkdata:
+        return ('Token expirado', 401)
+    uid = tkdata['sub']
     """
         !!!! TODO: esto se debe activar ni bien esté operativa la nueva version de warden
 
@@ -206,11 +212,10 @@ def obtener_tutoria(tid):
     #if not _chequear_usuarios_tutorias(uid):
     #    return ('No tiene permisos para realizar esta acción', 403)
 
-    assert tid is not None
-
     try:
+        assert tid is not None
         with obtener_session() as session:
-            t = tutoriasModel.obtener_tutoria(session, tid)
+            t = tutoriasModel.obtener_tutoria(session, tid, uid)
             resultado = {
                 'id': t.id,
                 'fecha': t.fecha,
@@ -237,19 +242,21 @@ def obtener_tutoria(tid):
 
 @bp.route('/tutoria/<tid>', methods=['DELETE'])
 def eliminar_tutoria(tid):
-    try:
-        (token,tkdata) = warden._require_valid_token()
-        """
-            !!!! TODO: esto se debe activar ni bien esté operativa la nueva version de warden
+    (token,tkdata) = warden._require_valid_token()
+    if not tkdata:
+        return ('Token expirado', 401)
+    uid = tkdata['sub']        
+    """
+        !!!! TODO: esto se debe activar ni bien esté operativa la nueva version de warden
 
-        if not warden.has_permissions(token, permisos=[NORMAS_CREATE]):
-            return ('No tiene permisos para realizar esta acción', 403)
-        """
-        if not tkdata:
-            raise Exception('token == null')
-        uid = tkdata['sub']
-        #if not _chequear_usuarios_tutorias(uid):
-        #    return ('No tiene permisos para realizar esta acción', 403)
+    if not warden.has_permissions(token, permisos=[NORMAS_CREATE]):
+        return ('No tiene permisos para realizar esta acción', 403)
+    """
+    #if not _chequear_usuarios_tutorias(uid):
+    #    return ('No tiene permisos para realizar esta acción', 403)
+
+    try:
+
         assert tid is not None
 
         with obtener_session() as session:
