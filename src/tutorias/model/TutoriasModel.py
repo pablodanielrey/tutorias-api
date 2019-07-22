@@ -24,8 +24,10 @@ class TutoriasModel:
 
     def obtener_tutorias(self, session):
         #ts = session.query(Tutoria).all()
-        ts = session.query(Tutoria).order_by(Tutoria.fecha.desc()).limit(10).all()
+        #ts = session.query(Tutoria).order_by(Tutoria.fecha.desc()).limit(10).all()
         
+        ts = session.query(Tutoria).filter(Tutoria.tutor_id == '89d88b81-fbc0-48fa-badb-d32854d3d93a').all()
+
         """ es mas rápido una sola llamada a la api de usuarios """
         tuids = [t.tutor_id for t in ts]
         users = self.users_model.obtener_usuarios(tuids)

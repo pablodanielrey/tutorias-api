@@ -281,7 +281,7 @@ def crear_asistencia():
             for alumno_id in alumnos:
                 aid.append(tutoriasModel.crear_asistencia(session, tutoria_id, alumno_id, situacion_id))
             session.commit()
-            return jsonify({'status':200, 'response':aid})
+            return jsonify({'status':200, 'response':{'tutoria_id':tutoria_id,'asistencias':aid}})
 
     except Exception as e:
         return jsonify({'status':500, 'response': str(e)})    
