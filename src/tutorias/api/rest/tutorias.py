@@ -60,6 +60,7 @@ def _chequear_usuarios_tutorias(uid):
     ]
     return uid in uids
 
+"""
 @bp.route('/register', methods=['GET'])
 def registrar_permisos():
     try:
@@ -75,7 +76,7 @@ def registrar_permisos():
 
     except Exception as e:
         return jsonify({'status':500, 'response': str(e)})    
-
+"""
 
 @bp.route('/situaciones', methods=['GET'])
 def obtener_situaciones():

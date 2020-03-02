@@ -12,7 +12,7 @@
 from setuptools import setup, find_packages
 
 setup(name='tutorias-api',
-          version='0.0.1.a1',
+          version='0.0.2',
           description='Proyecto que implementa la api del sistema de tutorias',
           url='https://github.com/pablodanielrey/tutorias-api',
           author='Desarrollo DiTeSi, FCE',
@@ -39,7 +39,7 @@ setup(name='tutorias-api',
               'pyqrcode',
               'pypng',
               'pymongo',
-              'users-sdk>=1.7.0',
+              'redis==2.10.6',
               'microservices-common>=2.0.8a1'
           ],
           entry_points={
