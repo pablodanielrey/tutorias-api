@@ -39,6 +39,9 @@ class TutoriasModel:
 
         """ es mas rápido una sola llamada a la api de usuarios """
         tuids = [t.tutor_id for t in ts]
+        if len(tuids) <= 0:
+            return []
+            
         users = self.users_model.obtener_usuarios(tuids)
 
         iusers = {}
