@@ -40,6 +40,7 @@ setup(name='tutorias-api',
               'pypng',
               'pymongo',
               'redis==2.10.6',
+              'users-model',
               'microservices-common>=2.0.8a1'
           ],
           entry_points={

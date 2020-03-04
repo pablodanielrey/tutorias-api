@@ -7,15 +7,20 @@ import io
 
 from flask import Blueprint, request, jsonify, send_file
 
-from tutorias.api.rest.models import usersModel
+from users.model.UsersModel import UsersModel
+from users.model import open_session
+
+from tutorias.model.Utils import map_user_from_model
 
 bp = Blueprint('users', __name__, url_prefix='/tutorias/api/v1.0')
 
 @bp.route('/usuarios/<list:uids>', methods=['GET'])
 def obtener_usuarios_por_uids(uids=[]):
     try:
-        usuarios = usersModel.obtener_usuarios(uids)
-        return jsonify({'status': 200, 'response': usuarios})
+        with open_session() as s:
+            usuarios = UsersModel.get_users(s, uids)
+            musers = [map_user_from_model(u) for u in usuarios]
+        return jsonify({'status': 200, 'response': musers})
 
     except Exception as e:
         return jsonify({'status': 500, 'response':str(e)})
@@ -25,8 +30,11 @@ def obtener_usuarios_por_uids(uids=[]):
 def obtener_usuarios_por_search():
     try:
         search = request.args.get('q', None)
-        usuarios = usersModel.buscar_usuarios(search)
-        return jsonify({'status': 200, 'response': usuarios})
+        with open_session() as s:
+            uids = UsersModel.search_user(s, search) 
+            usuarios = UsersModel.get_users(s, uids)
+            musers = [map_user_from_model(u) for u in usuarios]
+        return jsonify({'status': 200, 'response': musers})
 
     except Exception as e:
         return jsonify({'status': 500, 'response':str(e)})    

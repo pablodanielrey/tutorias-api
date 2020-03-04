@@ -4,15 +4,20 @@ import datetime
 
 import pyqrcode
 #from pyqrcode import QRCode
-
-from .UsersModel import UsersModel
 from .entities.Tutorias import Situacion, Tutoria, Asistencia, Coordinador
+
+from users.model.UsersModel import UsersModel
+from users.model import open_session
+
+from .Utils import map_user_from_model
 
 class TutoriasModel:
 
-    def __init__(self, users_model):
-        self.users_model = users_model
-
+    def _obtener_usuarios(self, uids):
+        with open_session() as s:
+            users = UsersModel.get_users(s, uids)
+            musers = [map_user_from_model(u) for u in users]
+        return musers
 
     def _chequear_acceso(self, session, tid, uid):
         ''' chequea si tiene acceso a los datos de la tutoría '''
@@ -25,7 +30,9 @@ class TutoriasModel:
     def obtener_tutoria(self, session, tid, uid):
         t = self._chequear_acceso(session, tid, uid)
         asistencia = self.obtener_asistencia(session, tid)
-        u = self.users_model.obtener_usuario(t.tutor_id)
+        
+        u = self._obtener_usuarios([t.tutor_id])
+
         t.tutor = u
         t.nro_alumnos = len(asistencia)
         t.asistencia = asistencia
@@ -41,8 +48,8 @@ class TutoriasModel:
         tuids = [t.tutor_id for t in ts]
         if len(tuids) <= 0:
             return []
-            
-        users = self.users_model.obtener_usuarios(tuids)
+
+        users = self._obtener_usuarios(tuids)
 
         iusers = {}
         for u in users:
@@ -94,7 +101,7 @@ class TutoriasModel:
         ts = session.query(Asistencia).filter(Asistencia.tutoria_id == tid, Asistencia.deleted == False).all()
 
         uids = [a.alumno_id for a in ts]
-        alumnos = self.users_model.obtener_usuarios(uids)
+        alumnos = self._obtener_usuarios(uids)
 
         ''' genero un indice '''
         ialumnos = {}
