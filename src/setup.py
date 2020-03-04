@@ -12,7 +12,7 @@
 from setuptools import setup, find_packages
 
 setup(name='tutorias-api',
-          version='0.0.2',
+          version='0.1.0',
           description='Proyecto que implementa la api del sistema de tutorias',
           url='https://github.com/pablodanielrey/tutorias-api',
           author='Desarrollo DiTeSi, FCE',
