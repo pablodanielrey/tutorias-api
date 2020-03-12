@@ -15,13 +15,11 @@ if __name__ == '__main__':
     with open(archivo, 'r') as f:
         fs = f.readlines()
 
+    super_coordinadores = ['34974829','36936634']
+
     catedras = {}
     for l in fs:
         catedra, nombre, dni, cargo = l.split(";")
-        print(catedra)
-        print(dni)
-        print(cargo)
-
         if catedra not in catedras:
             catedras[catedra] = {'tutores':[], 'coordinadores':[]}
 
@@ -29,6 +27,11 @@ if __name__ == '__main__':
             catedras[catedra]['tutores'].append(dni)
         if 'COORDINADOR' in cargo:
             catedras[catedra]['coordinadores'].append(dni)
+
+        for sc in super_coordinadores:
+            catedras[catedra]['coordinadores'].append(sc)
+
+    print(json.dumps(catedras))
 
     usersModel = UsersModel
 
@@ -41,7 +44,8 @@ if __name__ == '__main__':
 
                     for tutor in catedras[c]['tutores']:
                         tuid = usersModel.get_uid_person_number(susers, tutor)
-                        assert tuid is not None
+                        if tuid is None:
+                            continue
 
                         if stutorias.query(Coordinador).filter(Coordinador.coordinador_id == cuid, Coordinador.tutor_id == tuid).count() > 0:
                             print(f'{coordinador};{tutor};ya existe')
