@@ -39,7 +39,7 @@ setup(name='tutorias-api',
               'pyqrcode',
               'pypng',
               'pymongo',
-              'redis==2.10.6',
+              'redis==4.4.4',
               'users-model',
               'microservices-common>=2.0.8a1'
           ],
